@@ -12,22 +12,29 @@ def receipt(err, msg):
         print(message) 
 
 if __name__ == '__main__':
-    producer = Producer({'bootstrap.servers': 'localhost:9092'})
-    topic = 'taxi-porto'
+    producer = Producer({'bootstrap.servers': 'localhost:29092'})
+    topic = 'taxiporto'
     print('Kafka Producer has been initiated')
 
-    reader = csv.reader(open('train.csv'))
-    next(reader)
-    first_line = True
+    with open('porto.csv') as csvFile:  
+        data = csv.DictReader(csvFile)
+        for row in data:
+            row['trip_id'] = int(row['trip_id'])
+            row['origin_call'] = int(row['origin_call']) if row['origin_call'] != "" else -1
+            row['origin_stand'] = int(row['origin_stand']) if row['origin_stand'] != "" else -1
+            row['taxi_id'] = int(row['taxi_id'])
+            row['start_time'] = int(row['start_time'])
+            row['end_time'] = float(row['end_time'])
+            row['trip_duration'] = float(row['trip_duration'])
+            row['start_lon'] = float(row['start_lon']) if row['start_lon'] != "" else -8.652186
+            row['start_lat'] = float(row['start_lat']) if row['start_lat'] != "" else 41.15178
+            row['end_lon'] = float(row['end_lon']) if row['end_lon'] != "" else -8.619606
+            row['end_lat'] = float(row['end_lat']) if row['end_lat'] != "" else 41.149827
 
-    while True:
-        try:
-            line = next(reader, None)
-            json_line = json.dumps(line)
-
-            producer.produce(topic, key = 'porto', value = json_line, callback = receipt)
+            producer.produce(topic, key = 'porto', value = json.dumps(row), callback = receipt)
             producer.flush()
-            time.sleep(2)
-        except TypeError:
-            sys.exit()
+            
+            time.sleep(0.1)
+
+    print('Kafka message producer done!')
 

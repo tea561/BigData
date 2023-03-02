@@ -29,7 +29,6 @@ def create_database(cassandra_session):
 
 
 if __name__ == '__main__':
-    appName = 'Taxi Porto'
 
     cassandra_cluster = Cluster("cassandra", port=9042)
     cassandra_session = cassandra_cluster.connect()

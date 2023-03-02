@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  prediction-streaming:
+    build: ./streaming/
+    image: prediction-streaming:latest
+    container_name: prediction-streaming
+    environment:
+      SPARK_MASTER_NAME: spark-master
+      SPARK_MASTER_PORT: 7077
+      ENABLE_INIT_DAEMON: "false"
+      SPARK_SUBMIT_ARGS: "--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2"
+      WINDOW_DURATION_IN_SECONDS: 2
+      INFLUXDB_HOST: influxdb
+      INFLUXDB_PORT: 8086
+      INFLUXDB_USERNAME: admin
+      INFLUXDB_PASSWORD: admin
+      INFLUXDB_DATABASE: taxiportodb
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - "0.0.0.0:8086:8086"
+    container_name: influxdb
+    hostname: influxdb
+    environment:
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_DB=taxiportodb
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "0.0.0.0:3000:3000"
+    container_name: grafana
+    hostname: grafana
+networks:
+  default:
+    external:
+      name: bigdata

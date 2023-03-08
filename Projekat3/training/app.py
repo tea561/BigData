@@ -97,12 +97,4 @@ if __name__ == '__main__':
 
     mp.write().overwrite().save(MODEL_LOCATION)
 
-    #dataset.describe().show()
-
-    # dfPlot = dataset.groupBy('call_type').sum("Quantity")
-    # x = dfPlot.to_pandas()['call_type'].values.toList()
-    # y = dfPlot.to_pandas()['sum(Quantity)'].values.toList()
-    # plt.plot(x, y)
-    # plt.savefig('plot1.png')
-
     spark.stop()

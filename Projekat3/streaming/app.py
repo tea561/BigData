@@ -75,118 +75,8 @@ class InfluxDBWriter:
                     .field("trip_duration", float(row['trip_duration'])) \
                     .field("prediction", float(row['prediction'])) \
                     .time(timestamp, write_precision='ms')
- 
-        # measurementData = {
-        #         "measurement": KAFKA_TOPIC,
-        #         "time": timestamp,
-        #         "tag": {
-        #             "trip": int(row['trip_id'])
-        #         },
-        #         "fields": {
-        #             "trip_id": int(row['trip_id']),
-        #             "taxi_id": int(row['taxi_id']),
-        #             "start_lat": float(row['start_lat']) if row['start_lat'] != "" else 41.15178,
-        #             "start_lon": float(row['start_lon']) if row['start_lon'] != "" else -8.652186,
-        #             "end_lat": float(row['end_lat']) if row['end_lat'] != "" else 41.149827,
-        #             "end_lon": float(row['end_lon']) if row['end_lon'] != "" else -8.619606,
-        #             "trip_duration": float(row['trip_duration']),
-        #             "prediction": float(row['prediction'])
-        #         }
-        #     }
-        
-        # return Point.from_dict(measurementData)              
-        
 
-
-# def write_to_db(data_row):
-#     timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-#     # measurementData = [
-#     #     {
-#     #         "measurement": KAFKA_TOPIC,
-#     #         "time": timestamp,
-#     #         "fields": {
-#     #             "trip_id": int(data_row['trip_id']),
-#     #             "taxi_id": int(data_row['taxi_id']),
-#     #             "start_lat": float(data_row['start_lat']) if data_row['start_lat'] != "" else 41.15178,
-#     #             "start_lon": float(data_row['start_lon']) if data_row['start_lon'] != "" else -8.652186,
-#     #             "end_lat": float(data_row['end_lat']) if data_row['end_lat'] != "" else 41.149827,
-#     #             "end_lon": float(data_row['end_lon']) if data_row['end_lon'] != "" else -8.619606,
-#     #             "trip_duration": float(data_row['trip_duration']),
-#     #             "prediction": float(data_row['prediction'])
-#     #         }
-#     #     }
-#     # ]
-
-#     json_body = [
-#         {
-#             "measurement": "brushEvents",
-#             # "tags": {
-#             #     "user": "Carol",
-#             #     "brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-#             # },
-#             "time": timestamp,
-#             "fields": {
-#                 "duration": 127
-#             }
-#         }
-#     ]
-#     influxClient.write_points(json_body)
-#     # print(measurementData)
-#     # influxClient.write_points(measurementData, time_precision='ms')
-
-# def process_row(row):
-#     row_list = []
-#     row_list.append(row)
-#     df = spark.createDataFrame(row_list)
-#     if df.count() != 0:
-#         for col_name in nullable_columns:
-#             df = df.withColumn(col_name, F.when(F.isnull(df[col_name]), 0).otherwise(df[col_name]).alias(col_name))
-#         df = df.drop('missing_data')
-#         df = df.drop('trip_id')
-#         df = df.drop('day_type')
-
-#         indexed = indexer.transform(df1)
-
-#         va = VectorAssembler().setInputCols(columns).setOutputCol('features').setHandleInvalid("skip").transform(indexed)
-
-#         scaled = scaler.transform(va)
-
-#         prediction = model.transform(scaled)
-#         prediction.foreach(write_to_db)
-
-#         data_row = prediction.head(1)
-
-#         timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-
-#         json_body = [
-#             {
-#                 "measurement": "brushEvents",
-#                 # "tags": {
-#                 #     "user": "Carol",
-#                 #     "brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-#                 # },
-#                 "time": timestamp,
-#                 "fields": {
-#                     "duration": 127
-#                 }
-#             }
-#         ]
-#         influxClient.write_points(json_body)
-
-#         # prediction.writeStream \
-#         #     .outputMode("update") \
-#         #     .format("console") \
-#         #     .option("truncate", False) \
-#         #     .start() \
-#         #     .awaitTermination() \
-
-
-if __name__ == '__main__':
-    # HDFS_DATA = os.getenv('HDFS_URL')
-
-
-    # window_duration = os.getenv('WINDOW_DURATION_IN_SECONDS')    
-    
+if __name__ == '__main__':    
     schema = StructType([
                 StructField("trip_id",LongType(),True),
                 StructField("call_type", StringType(),True),
@@ -216,14 +106,6 @@ if __name__ == '__main__':
 
     df1 = df.selectExpr("CAST(value AS STRING)").select(F.from_json(F.col("value"), schema).alias("data")).select("data.*")
     
-    # df1.writeStream \
-    #     .outputMode("append") \
-    #     .foreach(InfluxDBWriter()) \
-    #     .start() \
-    #     .awaitTermination()
-    # df1.writeStream.foreach(process_batch).start()
-    
-    # df1.writeStream.foreach(process_row).start().awaitTermination()
 
     for col_name in nullable_columns:
         df1 = df1.withColumn(col_name, F.when(F.isnull(df1[col_name]), 0).otherwise(df1[col_name]).alias(col_name))
@@ -245,18 +127,5 @@ if __name__ == '__main__':
         .foreach(InfluxDBWriter()) \
         .start()
     query.awaitTermination()
-    # spark.streams.awaitAnyTermination()
-    # # prediction.writeStream \
-    # #     .outputMode("update") \
-    # #     .format("console") \
-    # #     .option("truncate", False) \
-    # #     .start() \
-    # #     .awaitTermination() \
-        
-    # prediction.show()
-    
-    # scaler_model = scaler.fit(split[0])
-    # train = scaler_model.transform(split[0])
-    # test = scaler_model.transform(split[1])
 
     

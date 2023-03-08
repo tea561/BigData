@@ -12,4 +12,11 @@ CREATE TABLE bigdata.tripduration (
   min float,          
   avg float,
   stddev double,
+  taxi1 int, 
+  count1 int, 
+  taxi2 int,
+  count2 int,
+  taxi3 int, 
+  count3 int
 );
+
